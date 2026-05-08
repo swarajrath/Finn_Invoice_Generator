@@ -9,42 +9,76 @@ define root view entity Z_C_InvoiceTracking
 {
       @Search.defaultSearchElement: true
       @Search.fuzzinessThreshold: 0.8
+      @EndUserText.label: 'Header UUID'
   key HeaderUuid,
 
       @Search.defaultSearchElement: true
+      @EndUserText.label: 'Invoice Number'
       InvoiceNumber,
 
       @Search.defaultSearchElement: true
+      @EndUserText.label: 'Supplier'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_Supplier', element: 'Supplier' } }]
       VendorNumber,
 
+      @EndUserText.label: 'Company Code'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_CompanyCode', element: 'CompanyCode' } }]
       CompanyCode,
 
+      @EndUserText.label: 'Invoice Date'
       InvoiceDate,
+
+      @EndUserText.label: 'Document Date'
       DocumentDate,
+
+      @EndUserText.label: 'Posting Date'
       PostingDate,
+
+      @EndUserText.label: 'Fiscal Year'
       FiscalYear,
 
+      @EndUserText.label: 'Currency'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_Currency', element: 'Currency' } }]
       Currency,
 
+      @EndUserText.label: 'Gross Amount'
       GrossAmount,
+
+      @EndUserText.label: 'Net Amount'
       NetAmount,
+
+      @EndUserText.label: 'Tax Amount'
       TaxAmount,
 
+      @EndUserText.label: 'Payment Terms'
       PaymentTerms,
+
+      @EndUserText.label: 'Baseline Date'
       BaselineDate,
+
+      @EndUserText.label: 'Payment Method'
       PaymentMethod,
+
+      @EndUserText.label: 'Payment Block'
       PaymentBlock,
 
+      @EndUserText.label: 'Document Type'
       DocumentType,
+
+      @EndUserText.label: 'Header Text'
       HeaderText,
+
+      @EndUserText.label: 'Reference'
       Reference,
+
+      @EndUserText.label: 'PO Number'
       PoNumber,
 
       // Status with text and criticality
+      @EndUserText.label: 'Status'
       Status,
+
+      @EndUserText.label: 'Status Description'
       case Status
         when 'N' then 'New'
         when 'P' then 'In Progress'
@@ -67,7 +101,10 @@ define root view entity Z_C_InvoiceTracking
         else 0
       end                      as StatusCriticality,
 
+      @EndUserText.label: 'Processing Type'
       ProcessingType,
+
+      @EndUserText.label: 'Processing Type Description'
       case ProcessingType
         when 'A' then 'Automatic'
         when 'M' then 'Manual Correction'
@@ -75,43 +112,77 @@ define root view entity Z_C_InvoiceTracking
         else ''
       end                      as ProcessingTypeText,
 
+      @EndUserText.label: 'SAP Document'
       SapDocument,
+
+      @EndUserText.label: 'SAP Fiscal Year'
       SapFiscalYear,
 
+      @EndUserText.label: 'Error Code'
       ErrorCode,
+
+      @EndUserText.label: 'Error Message'
       ErrorMessage,
+
+      @EndUserText.label: 'Error Field'
       ErrorField,
 
+      @EndUserText.label: 'Retry Count'
       RetryCount,
+
+      @EndUserText.label: 'Retry Allowed'
       RetryAllowed,
+
+      @EndUserText.label: 'Retry Allowed'
       case RetryAllowed
         when 'X' then 'Yes'
         else 'No'
       end                      as RetryAllowedText,
 
+      @EndUserText.label: 'External Document ID'
       ExternalDocId,
 
+      @EndUserText.label: 'OCR Confidence'
       @UI.dataPoint: { criticality: 'ConfidenceCriticality' }
       ExtractionConfidence,
+
       case
         when ExtractionConfidence >= cast( 0.95 as abap.dec(3,2) ) then 3
         when ExtractionConfidence >= cast( 0.80 as abap.dec(3,2) ) then 2
         else 1
       end                      as ConfidenceCriticality,
 
+      @EndUserText.label: 'PDF URL'
       PdfUrl,
 
+      @EndUserText.label: 'Created By'
       CreatedBy,
+
+      @EndUserText.label: 'Created At'
       CreatedAt,
+
+      @EndUserText.label: 'Changed By'
       ChangedBy,
+
+      @EndUserText.label: 'Changed At'
       ChangedAt,
+
+      @EndUserText.label: 'Posted At'
       PostedAt,
+
+      @EndUserText.label: 'Corrected By'
       CorrectedBy,
+
+      @EndUserText.label: 'Corrected At'
       CorrectedAt,
 
+      @EndUserText.label: 'Processing Time (ms)'
       ProcessingTimeMs,
 
+      @EndUserText.label: 'Business Area'
       BusinessArea,
+
+      @EndUserText.label: 'Item Count'
       ItemCount,
 
       // Associations

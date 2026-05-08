@@ -9,13 +9,19 @@ lock master total etag ChangedAt
 authorization master ( instance )
 etag master ChangedAt
 {
+  // Standard operations
   create;
   update;
   delete;
 
-  field ( readonly ) HeaderUuid, CreatedBy, CreatedAt, PostedAt, ProcessingTimeMs;
+  // Field characteristics
+  field ( readonly : update ) HeaderUuid;
+  field ( numbering : managed ) HeaderUuid;
+  field ( readonly ) CreatedBy, CreatedAt, PostedAt, ProcessingTimeMs, SapDocument, SapFiscalYear;
   field ( readonly : update ) ExternalDocId;
+  field ( mandatory ) InvoiceNumber, VendorNumber, CompanyCode, PostingDate, Currency, GrossAmount;
 
+  // Associations
   association _Items { create; with draft; }
 
   // Draft actions
@@ -23,17 +29,23 @@ etag master ChangedAt
   draft action Activate optimized;
   draft action Discard;
   draft action Resume;
-  draft determine action Prepare;
+  draft determine action Prepare
+  {
+    validation validateHeader;
+    validation checkDuplicate;
+    validation InvoiceItem~validateItem;
+  }
 
   // Actions
-  action repost result [1] $self;
-  action correct result [1] $self;
-  action cancel result [1] $self;
+  action ( features : instance ) repost result [1] $self;
+  action ( features : instance ) correct result [1] $self;
+  action ( features : instance ) cancel result [1] $self;
 
   // Validations
-  validation validateHeader on save { field VendorNumber, CompanyCode, InvoiceNumber, PostingDate; }
-  validation checkDuplicate on save { field VendorNumber, InvoiceNumber, CompanyCode; }
+  validation validateHeader on save { field VendorNumber, CompanyCode, InvoiceNumber, PostingDate; create; }
+  validation checkDuplicate on save { field VendorNumber, InvoiceNumber, CompanyCode; create; }
 
+  // Mapping
   mapping for zfinn_inv_hrd
   {
     HeaderUuid = header_uuid;
@@ -88,16 +100,31 @@ lock dependent by _Header
 authorization dependent by _Header
 etag master ChangedAt
 {
+  // Standard operations
   update;
   delete;
 
-  field ( readonly ) HeaderUuid, ItemUuid, CreatedAt;
+  // Field characteristics
+  field ( readonly : update ) HeaderUuid, ItemUuid;
+  field ( numbering : managed ) ItemUuid;
+  field ( readonly ) CreatedAt, ValidationStatus;
   field ( readonly : update ) ItemNumber;
+  field ( mandatory ) GlAccount, Amount;
 
+  // Associations
   association _Header { with draft; }
 
-  validation validateItem on save { field GlAccount, Amount; }
+  // Validations
+  validation validateItem on save { field GlAccount, Amount; create; }
 
+  // Side effects
+  side effects
+  {
+    field TaxCode affects field TaxAmount;
+    field Amount affects field TaxAmount;
+  }
+
+  // Mapping
   mapping for zfinn_inv_item
   {
     HeaderUuid = header_uuid;

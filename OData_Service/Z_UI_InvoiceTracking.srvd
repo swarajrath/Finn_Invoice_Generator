@@ -1,5 +1,5 @@
 @EndUserText.label: 'Invoice Tracking Service'
-define service Z_UI_InvoiceTracking_O4 {
+define service Z_UI_InvoiceTracking {
   expose Z_C_InvoiceTracking as InvoiceHeader;
   expose Z_C_InvoiceItems as InvoiceItems;
   expose Z_C_InvoiceLogs as InvoiceLogs;

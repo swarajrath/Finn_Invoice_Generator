@@ -1,88 +1,130 @@
-# FINN Invoice Tracking - Setup Guide
+# FINN Invoice Tracking System
 
 > **Finn Invoice Generator** - SAP Fiori application for automated invoice processing and tracking with RAP backend.
 
-## Prerequisites
-- Node.js (v18 or higher)
-- SAP UI5 CLI
-- Access to SAP backend system
+## 📋 Project Overview
 
-## Initial Setup
+FINN Invoice Tracking is an end-to-end invoice processing solution built on SAP BTP and ABAP RAP (RESTful Application Programming). The system automates invoice data extraction from PDF documents using OCR technology and provides a modern Fiori Elements UI for invoice management and tracking.
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/swarajrath/Finn_Invoice_Generator.git
-cd FINN_CaseStudy
-```
+### Current Status: 🚧 In Development
 
-### 2. Install Fiori App Dependencies
-```bash
-cd finninvoicetracking
-npm install
-```
+**Completed Features:**
+- ✅ List Report page with invoice overview
+- ✅ Object Page with detailed invoice information
+- ✅ Delete functionality for invoice records
+- ✅ Multi-select support for bulk operations
+- ✅ Draft table architecture for OData V4
+- ✅ Backend validations (vendor checks, duplicate detection, GL account validation)
+- ✅ Status tracking with color-coded indicators
 
-### 3. Configure Backend Connection
+**In Progress:**
+- 🚧 Edit functionality (implementing draft-enabled behavior)
+- 🚧 Document processing system for PDF invoice scanning and data extraction
+- 🚧 OCR integration for automated invoice field recognition
 
-Copy the template file and configure your system:
-```bash
-cp ui5.yaml.template ui5.yaml
-```
+**Planned:**
+- 📅 Repost, Correct, and Cancel actions
+- 📅 PDF viewer integration
+- 📅 Approval workflow
+- 📅 Bulk processing capabilities
 
-Edit `ui5.yaml` and replace placeholders:
-- `YOUR_SAP_SYSTEM_URL_HERE` → Your SAP system URL (e.g., `https://ldai4er1.wdf.sap.corp:44300`)
-- `YOUR_DESTINATION_NAME` → Your SAP destination name (e.g., `ER1CLNT001`)
+---
 
-**⚠️ IMPORTANT:** Never commit `ui5.yaml` to Git as it contains your system URLs!
+## 📸 Application Screenshots
 
-### 4. Run the Application
-```bash
-npm start
-```
+### List Report Page
+The main dashboard displays all invoices with key information at a glance.
 
-The app will open at `http://localhost:8080`
+![List Report Page](images/List%20report%20page.png)
+
+**Features:**
+- Search and filter invoices by status, vendor, company code, or date range
+- Status indicators (Success, Error, In Progress)
+- Sortable columns with meaningful business labels
+- Multi-select for bulk delete operations
+- Quick navigation to invoice details
+
+### Object Page
+Detailed view of individual invoice with all associated information.
+
+![Object Page](images/Object%20page.png)
+
+**Features:**
+- Header information with key metrics (Status, Gross Amount, Processing Time, OCR Confidence)
+- General information section with invoice and document details
+- Amounts breakdown (Gross, Net, Tax)
+- Payment information (Terms, Baseline Date, Payment Block)
+- Line items table with G/L account postings
+- Error details section (when applicable)
+- Processing timeline and audit information
+
+### Additional Columns View
+Extended table view showing additional invoice fields.
+
+![Additional Columns](images/Additional%20columns.png)
+
+---
 
 ## Project Structure
 
 ```
 FINN_CaseStudy/
-├── 01_Database_Design/      # Database table DDL definitions
+├── 01_Database_Design/      # Database table DDL definitions (header, items, log, draft tables)
 ├── ABAP_Classes/             # ABAP behavior implementations and utilities
+│   ├── ZBP_C_INVOICETRACKING.abap          # RAP behavior implementation
+│   ├── ZCL_FINN_INVOICE_VALIDATOR.abap     # Validation utility (vendor, GL, duplicate checks)
+│   ├── ZCL_FINN_INVOICE_POSTER.abap        # BAPI wrapper for FI posting
+│   ├── ZCL_FINN_INVOICE_LOGGER.abap        # Audit logging
+│   └── ZCL_FINN_INVOICE_API_HANDLER.abap   # External API integration
 ├── CDS_Views/                # CDS views and behavior definitions
+│   ├── Z_I_InvoiceHeader.ddls              # Interface layer (header)
+│   ├── Z_I_InvoiceItem.ddls                # Interface layer (items)
+│   ├── Z_C_InvoiceTracking.ddls            # Consumption layer (header)
+│   ├── Z_C_InvoiceItems.ddls               # Consumption layer (items)
+│   ├── Z_C_InvoiceTracking.bdef            # Behavior definition with draft
+│   └── Z_C_InvoiceTracking.metadata.ddlx   # UI annotations
 ├── finninvoicetracking/      # Fiori Elements UI5 application
 │   ├── webapp/
 │   │   ├── manifest.json     # App descriptor
 │   │   ├── annotations.xml   # OData annotations
-│   │   └── ext/              # Controller extensions
+│   │   └── ext/              # Controller extensions for custom actions
 │   ├── ui5.yaml.template     # Template for backend configuration
 │   └── package.json
+├── images/                   # Application screenshots
 └── .gitignore
 ```
 
-## Deployment
+## 🎯 Key Features
 
-### To SAP BTP (Cloud Foundry)
-```bash
-npm run build
-cf push
-```
+### Backend (ABAP RAP)
+- **Draft-enabled entities** for OData V4 Edit functionality
+- **Comprehensive validations:**
+  - Vendor existence and blocking checks (LFA1/LFB1)
+  - Duplicate invoice detection (BKPF + custom tables)
+  - GL account validation (SKA1/SKB1)
+  - Cost center and tax code validation
+  - Posting period checks
+- **BAPI integration** for posting to SAP FI (BAPI_ACC_DOCUMENT_POST)
+- **Audit logging** with full event history
+- **Dynamic feature control** for status-based action visibility
 
-### To SAP ABAP Repository
-Use SAP Business Application Studio or VS Code with SAP Fiori tools extension.
+### Frontend (Fiori Elements)
+- **List Report + Object Page** pattern
+- **Value helps** for Supplier, Company Code, Currency, GL Account, Cost Center, etc.
+- **Responsive design** with adaptive layouts
+- **Type-safe TypeScript** controller extensions
+- **OPA5 integration tests** for UI validation
 
-## Security Notes
 
-Files excluded from Git (`.gitignore`):
-- `ui5.yaml` - Contains backend system URLs
-- `ui5-local.yaml` - Local development configuration
-- `.env` - Environment variables
-- `node_modules/` - Dependencies
-- `API_Design/` - API design documents
-- `Back_UP_Files/` - Backup files
+---
 
-## Support
+## 📚 Technical Architecture
 
-For issues or questions, please create an issue in the GitHub repository.
+### Data Model
+- **ZFINN_INV_HRD** - Invoice header table (active data)
+- **ZFINN_INV_HRD_D** - Invoice header draft table (OData V4 draft support)
+- **ZFINN_INV_ITEM** - Invoice line items table
+- **ZFINN_INV_ITEM_D** - Invoice items draft table
+- **ZFINN_INV_LOG** - Audit log and processing timeline
 
-## License
 
-[Add your license here]

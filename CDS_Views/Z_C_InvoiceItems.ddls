@@ -5,50 +5,83 @@ define view entity Z_C_InvoiceItems
   as select from Z_I_InvoiceItem
   association to parent Z_C_InvoiceTracking as _Header on $projection.HeaderUuid = _Header.HeaderUuid
 {
+      @EndUserText.label: 'Header UUID'
   key HeaderUuid,
+
+      @EndUserText.label: 'Item UUID'
   key ItemUuid,
 
+      @EndUserText.label: 'Item Number'
       ItemNumber,
 
+      @EndUserText.label: 'G/L Account'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_GLAccountText', element: 'GLAccount' } }]
       GlAccount,
 
+      @EndUserText.label: 'Cost Center'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_CostCenterText', element: 'CostCenter' } }]
       CostCenter,
 
+      @EndUserText.label: 'Profit Center'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_ProfitCenterText', element: 'ProfitCenter' } }]
       ProfitCenter,
 
+      @EndUserText.label: 'Internal Order'
       InternalOrder,
+
+      @EndUserText.label: 'WBS Element'
       WbsElement,
 
+      @EndUserText.label: 'Currency'
       // Include Currency from Interface view
       Currency,
 
+      @EndUserText.label: 'Amount'
       @Semantics.amount.currencyCode: 'Currency'
       Amount,
 
+      @EndUserText.label: 'Tax Code'
       @Consumption.valueHelpDefinition: [{ entity: { name: 'I_TaxCode', element: 'TaxCode' } }]
       TaxCode,
 
+      @EndUserText.label: 'Tax Amount'
       @Semantics.amount.currencyCode: 'Currency'
       TaxAmount,
 
+      @EndUserText.label: 'Quantity'
       Quantity,
+
+      @EndUserText.label: 'Unit'
       Unit,
 
+      @EndUserText.label: 'Item Text'
       ItemText,
+
+      @EndUserText.label: 'Assignment'
       Assignment,
+
+      @EndUserText.label: 'Reference Key'
       ReferenceKey,
 
+      @EndUserText.label: 'PO Number'
       PoNumber,
+
+      @EndUserText.label: 'PO Item'
       PoItem,
+
+      @EndUserText.label: 'PO History'
       PO_HISTORY,
 
+      @EndUserText.label: 'Material'
       Material,
+
+      @EndUserText.label: 'Plant'
       Plant,
 
+      @EndUserText.label: 'Validation Status'
       ValidationStatus,
+
+      @EndUserText.label: 'Validation Status'
       case ValidationStatus
         when 'V' then 'Valid'
         when 'E' then 'Error'
@@ -63,10 +96,16 @@ define view entity Z_C_InvoiceItems
         else 0
       end                  as ValidationCriticality,
 
+      @EndUserText.label: 'Error Code'
       error_code,
+
+      @EndUserText.label: 'Error Message'
       error_message,
 
+      @EndUserText.label: 'Created At'
       CreatedAt,
+
+      @EndUserText.label: 'Changed At'
       ChangedAt,
 
       _Header
