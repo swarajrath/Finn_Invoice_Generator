@@ -1,5 +1,7 @@
 # FINN Invoice Tracking - Setup Guide
 
+> **Finn Invoice Generator** - SAP Fiori application for automated invoice processing and tracking with RAP backend.
+
 ## Prerequisites
 - Node.js (v18 or higher)
 - SAP UI5 CLI
