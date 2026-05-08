@@ -1,0 +1,264 @@
+@Metadata.layer: #CORE
+@UI: {
+  headerInfo: {
+    typeName: 'Invoice',
+    typeNamePlural: 'Invoices',
+    title: { type: #STANDARD, value: 'InvoiceNumber' },
+    description: { value: 'VendorNumber' },
+    imageUrl: 'PdfUrl'
+  },
+  presentationVariant: [{
+    sortOrder: [{ by: 'CreatedAt', direction: #DESC }],
+    visualizations: [{type: #AS_LINEITEM}]
+  }]
+}
+annotate view Z_C_InvoiceTracking with
+{
+  // Status
+  @UI.selectionField: [{ position: 10 }]
+  @UI.lineItem: [{ position: 10, importance: #HIGH, criticality: 'StatusCriticality' }]
+  @UI.identification: [{ position: 10 }]
+  Status;
+
+  // VendorNumber
+  @UI.selectionField: [{ position: 20 }]
+  @UI.lineItem: [{ position: 30, importance: #HIGH }]
+  @UI.identification: [{ position: 30 }]
+  VendorNumber;
+
+  // CompanyCode
+  @UI.selectionField: [{ position: 30 }]
+  @UI.lineItem: [{ position: 40, importance: #MEDIUM }]
+  @UI.identification: [{ position: 40 }]
+  CompanyCode;
+
+  // InvoiceNumber
+  @UI.selectionField: [{ position: 40 }]
+  @UI.lineItem: [{ position: 20, importance: #HIGH }]
+  @UI.identification: [{ position: 20 }]
+  InvoiceNumber;
+
+  // PostingDate
+  @UI.selectionField: [{ position: 50 }]
+  @UI.lineItem: [{ position: 60, importance: #MEDIUM }]
+  PostingDate;
+
+  // CreatedAt
+  @UI.selectionField: [{ position: 60 }]
+  @UI.lineItem: [{ position: 90, importance: #LOW }]
+  @UI.fieldGroup: [{ qualifier: 'Audit', position: 20 }]
+  CreatedAt;
+
+  // GrossAmount
+  @UI.lineItem: [{ position: 50, importance: #HIGH }]
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 10 }]
+  @UI.dataPoint: {
+    qualifier: 'GrossAmount',
+    title: 'Gross Amount'
+  }
+  GrossAmount;
+
+  // SapDocument
+  @UI.lineItem: [{ position: 70, importance: #MEDIUM }]
+  SapDocument;
+
+  // ErrorMessage
+  @UI.lineItem: [{ position: 80, importance: #MEDIUM }]
+  @UI.fieldGroup: [{ qualifier: 'Errors', position: 20 }]
+  ErrorMessage;
+
+  // Field Groups - Amounts
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 20 }]
+  NetAmount;
+
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 30 }]
+  TaxAmount;
+
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 40 }]
+  Currency;
+
+  // Field Groups - Payment
+  @UI.fieldGroup: [{ qualifier: 'Payment', position: 10 }]
+  PaymentTerms;
+
+  @UI.fieldGroup: [{ qualifier: 'Payment', position: 20 }]
+  BaselineDate;
+
+  @UI.fieldGroup: [{ qualifier: 'Payment', position: 30 }]
+  PaymentMethod;
+
+  @UI.fieldGroup: [{ qualifier: 'Payment', position: 40 }]
+  PaymentBlock;
+
+  // Field Groups - Errors
+  @UI.fieldGroup: [{ qualifier: 'Errors', position: 10 }]
+  ErrorCode;
+
+  @UI.fieldGroup: [{ qualifier: 'Errors', position: 30 }]
+  ErrorField;
+
+  @UI.fieldGroup: [{ qualifier: 'Errors', position: 40 }]
+  RetryCount;
+
+  @UI.fieldGroup: [{ qualifier: 'Errors', position: 50 }]
+  RetryAllowedText;
+  @UI.facet: [
+    // Header Data
+    {
+      id: 'HeaderData',
+      purpose: #HEADER,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'Status',
+      position: 10
+    },
+    {
+      id: 'GrossAmount',
+      purpose: #HEADER,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'GrossAmount',
+      position: 20
+    },
+    {
+      id: 'ProcessingTime',
+      purpose: #HEADER,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'ProcessingTime',
+      position: 30
+    },
+    {
+      id: 'Confidence',
+      purpose: #HEADER,
+      type: #DATAPOINT_REFERENCE,
+      targetQualifier: 'Confidence',
+      position: 40
+    },
+
+    // General Information Section
+    {
+      id: 'GeneralInfo',
+      purpose: #STANDARD,
+      type: #IDENTIFICATION_REFERENCE,
+      label: 'General Information',
+      position: 10
+    },
+
+    // Amounts Section
+    {
+      id: 'Amounts',
+      purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE,
+      targetQualifier: 'Amounts',
+      label: 'Amounts',
+      position: 20
+    },
+
+    // Payment Information Section
+    {
+      id: 'Payment',
+      purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE,
+      targetQualifier: 'Payment',
+      label: 'Payment Information',
+      position: 30
+    },
+
+    // Error Details Section (only shown if errors exist)
+    {
+      id: 'ErrorDetails',
+      purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE,
+      targetQualifier: 'Errors',
+      label: 'Error Details',
+      position: 40
+    },
+
+    // Line Items Table
+    {
+      id: 'Items',
+      purpose: #STANDARD,
+      type: #LINEITEM_REFERENCE,
+      label: 'Line Items',
+      targetElement: '_Items',
+      position: 50
+    },
+
+    // Processing Log Timeline
+    {
+      id: 'ProcessingLog',
+      purpose: #STANDARD,
+      type: #LINEITEM_REFERENCE,
+      label: 'Processing Timeline',
+      targetElement: '_Logs',
+      position: 60
+    },
+
+    // Audit Information
+    {
+      id: 'AuditInfo',
+      purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE,
+      targetQualifier: 'Audit',
+      label: 'Audit Information',
+      position: 70
+    }
+  ]
+
+  // Data Points for Header
+  @UI.dataPoint: {
+    qualifier: 'Status',
+    title: 'Status',
+    criticality: 'StatusCriticality'
+  }
+  StatusText;
+
+  @UI.dataPoint: {
+    qualifier: 'ProcessingTime',
+    title: 'Processing Time (sec)'
+  }
+  ProcessingTimeSec;
+
+  @UI.dataPoint: {
+    qualifier: 'Confidence',
+    title: 'OCR Confidence',
+    criticality: 'ConfidenceCriticality'
+  }
+  ExtractionConfidence;
+
+  // Identification Fields (shown in General Info section)
+  @UI.identification: [{ position: 50 }]
+  InvoiceDate;
+
+  @UI.identification: [{ position: 60 }]
+  DocumentDate;
+
+  @UI.identification: [{ position: 70 }]
+  DocumentType;
+
+  @UI.identification: [{ position: 80 }]
+  HeaderText;
+
+  @UI.identification: [{ position: 90 }]
+  Reference;
+
+  @UI.identification: [{ position: 100 }]
+  PoNumber;
+
+  @UI.identification: [{ position: 110 }]
+  BusinessArea;
+
+  @UI.identification: [{ position: 120 }]
+  ExternalDocId;
+
+  @UI.identification: [{ position: 130 }]
+  PdfUrl;
+
+  // Hidden fields
+  @UI.hidden: true
+  HeaderUuid;
+
+  @UI.hidden: true
+  StatusCriticality;
+
+  @UI.hidden: true
+  ConfidenceCriticality;
+}

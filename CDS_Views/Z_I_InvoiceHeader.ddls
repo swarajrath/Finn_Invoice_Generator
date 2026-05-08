@@ -1,0 +1,78 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Invoice Header - Interface View'
+@Metadata.ignorePropagatedAnnotations: true
+define root view entity Z_I_InvoiceHeader
+  as select from zfinn_inv_hrd
+  composition [0..*] of Z_I_InvoiceItem as _Items
+  association [0..*] to Z_I_InvoiceLog as _Logs on $projection.HeaderUuid = _Logs.HeaderUuid
+{
+  key header_uuid           as HeaderUuid,
+
+      // Header Information
+      invoice_number        as InvoiceNumber,
+      vendor_number         as VendorNumber,
+      company_code          as CompanyCode,
+      invoice_date          as InvoiceDate,
+      document_date         as DocumentDate,
+      posting_date          as PostingDate,
+      fiscal_year           as FiscalYear,
+      currency              as Currency,
+
+      // Amounts
+      @Semantics.amount.currencyCode: 'Currency'
+      gross_amount          as GrossAmount,
+      @Semantics.amount.currencyCode: 'Currency'
+      net_amount            as NetAmount,
+      @Semantics.amount.currencyCode: 'Currency'
+      tax_amount            as TaxAmount,
+
+      // Payment Information
+      payment_terms         as PaymentTerms,
+      baseline_date         as BaselineDate,
+      payment_method        as PaymentMethod,
+      payment_block         as PaymentBlock,
+
+      // Document Information
+      document_type         as DocumentType,
+      header_text           as HeaderText,
+      reference             as Reference,
+      po_number             as PoNumber,
+
+      // Processing Information
+      status                as Status,
+      processing_type       as ProcessingType,
+      sap_document          as SapDocument,
+      sap_fiscal_year       as SapFiscalYear,
+      error_code            as ErrorCode,
+      error_message         as ErrorMessage,
+      error_field           as ErrorField,
+      retry_allowed         as RetryAllowed,
+      retry_count           as RetryCount,
+
+      // External Integration
+      external_doc_id       as ExternalDocId,
+      extraction_confidence as ExtractionConfidence,
+      pdf_url               as PdfUrl,
+
+      // Audit Fields
+      @Semantics.user.createdBy: true
+      created_by            as CreatedBy,
+      @Semantics.systemDateTime.createdAt: true
+      created_at            as CreatedAt,
+      @Semantics.user.lastChangedBy: true
+      changed_by            as ChangedBy,
+      @Semantics.systemDateTime.lastChangedAt: true
+      changed_at            as ChangedAt,
+      posted_at             as PostedAt,
+      corrected_by          as CorrectedBy,
+      corrected_at          as CorrectedAt,
+      processing_time_ms    as ProcessingTimeMs,
+
+      // Business Organization
+      business_area         as BusinessArea,
+      item_count            as ItemCount,
+
+      // Associations
+      _Items,
+      _Logs
+}

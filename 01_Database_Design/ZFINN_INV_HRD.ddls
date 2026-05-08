@@ -1,0 +1,55 @@
+@EndUserText.label : 'Invoice header table'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #ALLOWED
+define table zfinn_inv_hrd {
+
+  key mandt             : mandt not null;
+  key header_uuid       : sysuuid_x16 not null;
+  invoice_number        : xblnr;
+  vendor_number         : lifnr;
+  company_code          : bukrs;
+  invoice_date          : bldat;
+  document_date         : bldat;
+  posting_date          : budat;
+  fiscal_year           : gjahr;
+  currency              : waers;
+  @Semantics.amount.currencyCode : 'zfinn_inv_hrd.currency'
+  gross_amount          : wrbtr;
+  @Semantics.amount.currencyCode : 'zfinn_inv_hrd.currency'
+  net_amount            : wrbtr;
+  @Semantics.amount.currencyCode : 'zfinn_inv_hrd.currency'
+  tax_amount            : wrbtr;
+  payment_terms         : dzterm;
+  baseline_date         : dzfbdt;
+  payment_method        : dzwels;
+  payment_block         : dzahls;
+  document_type         : blart;
+  header_text           : bktxt;
+  reference             : xblnr1;
+  po_number             : ebeln;
+  status                : char1;
+  processing_type       : char1;
+  sap_document          : belnr_d;
+  sap_fiscal_year       : gjahr;
+  error_code            : char20;
+  error_message         : char255;
+  error_field           : char50;
+  retry_count           : int4;
+  external_doc_id       : char50;
+  extraction_confidence : dec8_2;
+  pdf_url               : rsrstring;
+  created_by            : syuname;
+  created_at            : timestampl;
+  changed_by            : syuname;
+  changed_at            : timestampl;
+  posted_at             : timestampl;
+  corrected_by          : syuname;
+  corrected_at          : timestampl;
+  processing_time_ms    : int4;
+  business_area         : gsber;
+  item_count            : int4;
+  retry_allowed         : char1;
+
+}

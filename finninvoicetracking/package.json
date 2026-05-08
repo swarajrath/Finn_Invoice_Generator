@@ -1,0 +1,40 @@
+{
+  "name": "finn.invoice.finninvoicetracking",
+  "version": "1.0.0-SNAPSHOT",
+  "description": "FINN Invoice Automation - Track and manage AP invoices with OCR extraction",
+  "keywords": [
+    "ui5",
+    "openui5",
+    "sapui5"
+  ],
+  "main": "webapp/index.html",
+  "dependencies": {},
+  "devDependencies": {
+    "@ui5/cli": "^4.0.33",
+    "@sap/ux-ui5-tooling": "1",
+    "@sap-ux/eslint-plugin-fiori-tools": "^9.0.0",
+    "eslint": "^9",
+    "@sapui5/types": "~1.147.0",
+    "ui5-tooling-transpile": "^3.10.0",
+    "typescript": "^5.9.3",
+    "@sap-ux/ui5-middleware-fe-mockserver": "2",
+    "ui5-task-copyright": "^3.0.5"
+  },
+  "scripts": {
+    "start": "fiori run --open \"test/flp.html#app-preview\"",
+    "start-local": "fiori run --config ./ui5-local.yaml --open \"test/flp.html#app-preview\"",
+    "build": "ui5 build --config=ui5.yaml --clean-dest --dest dist",
+    "lint": "eslint ./",
+    "ts-typecheck": "tsc --noEmit",
+    "prestart": "npm run ts-typecheck",
+    "prebuild": "npm run ts-typecheck",
+    "start-mock": "fiori run --config ./ui5-mock.yaml --open \"test/flp.html#app-preview\"",
+    "deploy": "fiori verify",
+    "deploy-config": "fiori add deploy-config",
+    "int-test": "fiori run --config ./ui5-mock.yaml --open \"/test/integration/opaTests.qunit.html\"",
+    "start-variants-management": "fiori run --open \"preview.html#app-preview\"",
+    "start-cards-generator": "fiori run --open \"/test/flpCardGeneratorSandbox.html#app-preview\""
+  },
+  "sapuxLayer": "VENDOR",
+  "sapux": true
+}

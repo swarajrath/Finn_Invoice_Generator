@@ -1,0 +1,46 @@
+@EndUserText.label : 'Invoice Items - Database Table'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zfinn_inv_item {
+
+  @AbapCatalog.foreignKey.screenCheck : true
+  key mandt         : mandt not null
+    with foreign key t000
+      where mandt = zfinn_inv_item.mandt;
+  @AbapCatalog.foreignKey.screenCheck : true
+  key header_uuid   : sysuuid_x16 not null
+    with foreign key zfinn_inv_hrd
+      where mandt = zfinn_inv_item.mandt
+        and header_uuid = zfinn_inv_item.header_uuid;
+  key item_uuid     : sysuuid_x16 not null;
+  item_number       : posnr;
+  gl_account        : hkont;
+  cost_center       : kostl;
+  profit_center     : prctr;
+  order_number      : aufnr;
+  wbs_element       : ps_posid;
+  @Semantics.amount.currencyCode : 'zfinn_inv_hrd.currency'
+  amount            : wrbtr;
+  tax_code          : mwskz;
+  @Semantics.amount.currencyCode : 'zfinn_inv_hrd.currency'
+  tax_amount        : wrbtr;
+  @Semantics.quantity.unitOfMeasure : 'zfinn_inv_item.unit'
+  quantity          : menge_d;
+  unit              : meins;
+  item_text         : sgtxt;
+  assignment        : dzuonr;
+  reference_key     : xref1;
+  po_number         : ebeln;
+  po_item           : ebelp;
+  po_history        : char1;
+  material_number   : matnr;
+  plant             : werks_d;
+  validation_status : char1;
+  error_message     : char255;
+  error_code        : char20;
+  created_at        : timestampl;
+  changed_at        : timestampl;
+
+}

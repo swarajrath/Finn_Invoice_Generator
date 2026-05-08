@@ -1,0 +1,60 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Invoice Items - Interface View'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_I_InvoiceItem
+  as select from zfinn_inv_item
+  association to parent Z_I_InvoiceHeader as _Header on $projection.HeaderUuid = _Header.HeaderUuid
+{
+  key header_uuid       as HeaderUuid,
+  key item_uuid         as ItemUuid,
+
+      item_number       as ItemNumber,
+
+      // Account Assignment
+      gl_account        as GlAccount,
+      cost_center       as CostCenter,
+      profit_center     as ProfitCenter,
+      order_number      as InternalOrder,
+      cast(wbs_element as abap.char(24)) as WbsElement,
+
+      // Amount & Tax
+      @Semantics.amount.currencyCode: 'Currency'
+      amount            as Amount,
+      tax_code          as TaxCode,
+      @Semantics.amount.currencyCode: 'Currency'
+      tax_amount        as TaxAmount,
+      @Semantics.quantity.unitOfMeasure: 'Unit'
+      quantity          as Quantity,
+      unit              as Unit,
+
+      // Currency (needed for amount semantics)
+      cast( 'EUR' as abap.cuky( 5 ) ) as Currency,
+
+      // Text & Reference
+      item_text         as ItemText,
+      assignment        as Assignment,
+      reference_key     as ReferenceKey,
+
+      // PO Reference
+      po_number         as PoNumber,
+      po_item           as PoItem,
+      po_history        as PO_HISTORY,
+
+      // Material
+      material_number   as Material,
+      plant             as Plant,
+
+      // Validation
+      validation_status as ValidationStatus,
+
+      // Timestamps
+      created_at        as CreatedAt,
+      changed_at        as ChangedAt,
+      
+      // Error handling
+      error_code,
+      error_message,
+
+      // Association
+      _Header
+}

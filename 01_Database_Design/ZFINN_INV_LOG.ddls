@@ -1,0 +1,49 @@
+@EndUserText.label : 'Invoice Processing Log - Database Table'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zfinn_inv_log {
+
+  @AbapCatalog.foreignKey.screenCheck : true
+  key mandt              : mandt not null
+    with foreign key t000
+      where mandt = zfinn_inv_log.mandt;
+  key log_uuid           : sysuuid_x16 not null;
+  @AbapCatalog.foreignKey.screenCheck : true
+  header_uuid            : sysuuid_x16 not null
+    with foreign key zfinn_inv_hrd
+      where mandt = zfinn_inv_log.mandt
+        and header_uuid = zfinn_inv_log.header_uuid;
+  timestamp              : timestampl;
+  event_type             : char20;
+  event_subtype          : char20;
+  processing_step        : char50;
+  user_name              : syuname;
+  program_name           : syrepid;
+  old_status             : char1;
+  new_status             : char1;
+  status_reason          : char255;
+  error_code             : char20;
+  error_message          : char255;
+  technical_error        : stringval;
+  error_severity         : char1;
+  retry_count            : int4;
+  request_payload        : stringval;
+  response_payload       : stringval;
+  payload_size           : int4;
+  duration_ms            : int4;
+  validation_duration_ms : int4;
+  posting_duration_ms    : int4;
+  correlation_id         : char40;
+  session_id             : char40;
+  ip_address             : char45;
+  user_agent             : stringval;
+  changed_fields         : stringval;
+  ucomment               : stringval;
+  repost_reason          : stringval;
+  is_retry               : char1;
+  is_manual              : char1;
+  is_system              : char1;
+
+}

@@ -1,0 +1,130 @@
+managed implementation in class zbp_c_invoicetracking unique;
+strict ( 2 );
+with draft;
+
+define behavior for Z_C_InvoiceTracking alias InvoiceHeader
+persistent table zfinn_inv_hrd
+draft table zfinn_inv_hrd_d
+lock master total etag ChangedAt
+authorization master ( instance )
+etag master ChangedAt
+{
+  create;
+  update;
+  delete;
+
+  field ( readonly ) HeaderUuid, CreatedBy, CreatedAt, PostedAt, ProcessingTimeMs;
+  field ( readonly : update ) ExternalDocId;
+
+  association _Items { create; with draft; }
+
+  // Draft actions
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+
+  // Actions
+  action repost result [1] $self;
+  action correct result [1] $self;
+  action cancel result [1] $self;
+
+  // Validations
+  validation validateHeader on save { field VendorNumber, CompanyCode, InvoiceNumber, PostingDate; }
+  validation checkDuplicate on save { field VendorNumber, InvoiceNumber, CompanyCode; }
+
+  mapping for zfinn_inv_hrd
+  {
+    HeaderUuid = header_uuid;
+    InvoiceNumber = invoice_number;
+    VendorNumber = vendor_number;
+    CompanyCode = company_code;
+    InvoiceDate = invoice_date;
+    DocumentDate = document_date;
+    PostingDate = posting_date;
+    FiscalYear = fiscal_year;
+    Currency = currency;
+    GrossAmount = gross_amount;
+    NetAmount = net_amount;
+    TaxAmount = tax_amount;
+    PaymentTerms = payment_terms;
+    BaselineDate = baseline_date;
+    PaymentMethod = payment_method;
+    PaymentBlock = payment_block;
+    DocumentType = document_type;
+    HeaderText = header_text;
+    Reference = reference;
+    PoNumber = po_number;
+    Status = status;
+    ProcessingType = processing_type;
+    SapDocument = sap_document;
+    SapFiscalYear = sap_fiscal_year;
+    ErrorCode = error_code;
+    ErrorMessage = error_message;
+    ErrorField = error_field;
+    RetryCount = retry_count;
+    RetryAllowed = retry_allowed;
+    ExternalDocId = external_doc_id;
+    ExtractionConfidence = extraction_confidence;
+    PdfUrl = pdf_url;
+    CreatedBy = created_by;
+    CreatedAt = created_at;
+    ChangedBy = changed_by;
+    ChangedAt = changed_at;
+    PostedAt = posted_at;
+    CorrectedBy = corrected_by;
+    CorrectedAt = corrected_at;
+    ProcessingTimeMs = processing_time_ms;
+    BusinessArea = business_area;
+    ItemCount = item_count;
+  }
+}
+
+define behavior for Z_C_InvoiceItems alias InvoiceItem
+persistent table zfinn_inv_item
+draft table zfinn_inv_item_d
+lock dependent by _Header
+authorization dependent by _Header
+etag master ChangedAt
+{
+  update;
+  delete;
+
+  field ( readonly ) HeaderUuid, ItemUuid, CreatedAt;
+  field ( readonly : update ) ItemNumber;
+
+  association _Header { with draft; }
+
+  validation validateItem on save { field GlAccount, Amount; }
+
+  mapping for zfinn_inv_item
+  {
+    HeaderUuid = header_uuid;
+    ItemUuid = item_uuid;
+    ItemNumber = item_number;
+    GlAccount = gl_account;
+    CostCenter = cost_center;
+    ProfitCenter = profit_center;
+    InternalOrder = order_number;
+    WbsElement = wbs_element;
+    Amount = amount;
+    TaxCode = tax_code;
+    TaxAmount = tax_amount;
+    Quantity = quantity;
+    Unit = unit;
+    ItemText = item_text;
+    Assignment = assignment;
+    ReferenceKey = reference_key;
+    PoNumber = po_number;
+    PoItem = po_item;
+    PO_HISTORY = po_history;
+    Material = material_number;
+    Plant = plant;
+    ValidationStatus = validation_status;
+    error_message = error_message;
+    error_code = error_code;
+    CreatedAt = created_at;
+    ChangedAt = changed_at;
+  }
+}

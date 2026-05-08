@@ -1,0 +1,73 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Invoice Items - Consumption View'
+@Metadata.allowExtensions: true
+define view entity Z_C_InvoiceItems
+  as select from Z_I_InvoiceItem
+  association to parent Z_C_InvoiceTracking as _Header on $projection.HeaderUuid = _Header.HeaderUuid
+{
+  key HeaderUuid,
+  key ItemUuid,
+
+      ItemNumber,
+
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_GLAccountText', element: 'GLAccount' } }]
+      GlAccount,
+
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_CostCenterText', element: 'CostCenter' } }]
+      CostCenter,
+
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_ProfitCenterText', element: 'ProfitCenter' } }]
+      ProfitCenter,
+
+      InternalOrder,
+      WbsElement,
+
+      // Include Currency from Interface view
+      Currency,
+
+      @Semantics.amount.currencyCode: 'Currency'
+      Amount,
+
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_TaxCode', element: 'TaxCode' } }]
+      TaxCode,
+
+      @Semantics.amount.currencyCode: 'Currency'
+      TaxAmount,
+
+      Quantity,
+      Unit,
+
+      ItemText,
+      Assignment,
+      ReferenceKey,
+
+      PoNumber,
+      PoItem,
+      PO_HISTORY,
+
+      Material,
+      Plant,
+
+      ValidationStatus,
+      case ValidationStatus
+        when 'V' then 'Valid'
+        when 'E' then 'Error'
+        when 'S' then 'Success'
+        else ''
+      end                  as ValidationStatusText,
+
+      case ValidationStatus
+        when 'S' then 3  // Green
+        when 'V' then 3  // Green
+        when 'E' then 1  // Red
+        else 0
+      end                  as ValidationCriticality,
+
+      error_code,
+      error_message,
+
+      CreatedAt,
+      ChangedAt,
+
+      _Header
+}

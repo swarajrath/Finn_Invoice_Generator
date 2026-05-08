@@ -1,0 +1,78 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Invoice Logs - Consumption View'
+@Metadata.allowExtensions: true
+define view entity Z_C_InvoiceLogs
+  as select from Z_I_InvoiceLog
+{
+  key LogUuid,
+      HeaderUuid,
+
+      Timestamp,
+
+      EventType,
+      case EventType
+        when 'RECEIVED' then 'Invoice Received'
+        when 'VALIDATED' then 'Validated'
+        when 'POSTED' then 'Posted to SAP'
+        when 'ERROR' then 'Error Occurred'
+        when 'CORRECTED' then 'Manually Corrected'
+        when 'REPOSTED' then 'Reposted'
+        when 'CANCELLED' then 'Cancelled'
+        when 'POSTING_STARTED' then 'Posting Started'
+        when 'API_RESPONSE' then 'API Response'
+        else EventType
+      end                  as EventTypeText,
+
+      EventSubtype,
+      ProcessingStep,
+      UserName,
+      ProgramName,
+
+      OldStatus,
+      NewStatus,
+      StatusReason,
+
+      ErrorCode,
+      ErrorMessage,
+      TechnicalError,
+
+      ErrorSeverity,
+      case ErrorSeverity
+        when 'I' then 'Info'
+        when 'W' then 'Warning'
+        when 'E' then 'Error'
+        when 'C' then 'Critical'
+        else ''
+      end                  as ErrorSeverityText,
+
+      case ErrorSeverity
+        when 'I' then 0  // Grey
+        when 'W' then 2  // Yellow
+        when 'E' then 1  // Red
+        when 'C' then 1  // Red
+        else 0
+      end                  as ErrorCriticality,
+
+      RetryCount,
+
+      PayloadSize,
+
+      DurationMs,
+
+      ValidationDurationMs,
+      PostingDurationMs,
+
+      CorrelationId,
+      SessionId,
+      IpAddress,
+
+      ChangedFields,
+      Ucomment,
+      RepostReason,
+
+      IsRetry,
+      IsManual,
+      IsSystem,
+
+      _Header
+}

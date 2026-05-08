@@ -1,0 +1,120 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Invoice Tracking - Consumption View'
+@Metadata.allowExtensions: true
+@Search.searchable: true
+define root view entity Z_C_InvoiceTracking
+  as select from Z_I_InvoiceHeader
+  composition [0..*] of Z_C_InvoiceItems as _Items
+  association [0..*] to Z_C_InvoiceLogs as _Logs on $projection.HeaderUuid = _Logs.HeaderUuid
+{
+      @Search.defaultSearchElement: true
+      @Search.fuzzinessThreshold: 0.8
+  key HeaderUuid,
+
+      @Search.defaultSearchElement: true
+      InvoiceNumber,
+
+      @Search.defaultSearchElement: true
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_Supplier', element: 'Supplier' } }]
+      VendorNumber,
+
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_CompanyCode', element: 'CompanyCode' } }]
+      CompanyCode,
+
+      InvoiceDate,
+      DocumentDate,
+      PostingDate,
+      FiscalYear,
+
+      @Consumption.valueHelpDefinition: [{ entity: { name: 'I_Currency', element: 'Currency' } }]
+      Currency,
+
+      GrossAmount,
+      NetAmount,
+      TaxAmount,
+
+      PaymentTerms,
+      BaselineDate,
+      PaymentMethod,
+      PaymentBlock,
+
+      DocumentType,
+      HeaderText,
+      Reference,
+      PoNumber,
+
+      // Status with text and criticality
+      Status,
+      case Status
+        when 'N' then 'New'
+        when 'P' then 'In Progress'
+        when 'S' then 'Success'
+        when 'E' then 'Error'
+        when 'V' then 'Validation Error'
+        when 'R' then 'Ready for Repost'
+        when 'C' then 'Cancelled'
+        else 'Unknown'
+      end                      as StatusText,
+
+      case Status
+        when 'S' then 3  // Green
+        when 'N' then 2  // Yellow
+        when 'P' then 2  // Yellow
+        when 'R' then 2  // Yellow
+        when 'E' then 1  // Red
+        when 'V' then 1  // Red
+        when 'C' then 0  // Grey
+        else 0
+      end                      as StatusCriticality,
+
+      ProcessingType,
+      case ProcessingType
+        when 'A' then 'Automatic'
+        when 'M' then 'Manual Correction'
+        when 'R' then 'Reprocessed'
+        else ''
+      end                      as ProcessingTypeText,
+
+      SapDocument,
+      SapFiscalYear,
+
+      ErrorCode,
+      ErrorMessage,
+      ErrorField,
+
+      RetryCount,
+      RetryAllowed,
+      case RetryAllowed
+        when 'X' then 'Yes'
+        else 'No'
+      end                      as RetryAllowedText,
+
+      ExternalDocId,
+
+      @UI.dataPoint: { criticality: 'ConfidenceCriticality' }
+      ExtractionConfidence,
+      case
+        when ExtractionConfidence >= cast( 0.95 as abap.dec(3,2) ) then 3
+        when ExtractionConfidence >= cast( 0.80 as abap.dec(3,2) ) then 2
+        else 1
+      end                      as ConfidenceCriticality,
+
+      PdfUrl,
+
+      CreatedBy,
+      CreatedAt,
+      ChangedBy,
+      ChangedAt,
+      PostedAt,
+      CorrectedBy,
+      CorrectedAt,
+
+      ProcessingTimeMs,
+
+      BusinessArea,
+      ItemCount,
+
+      // Associations
+      _Items,
+      _Logs
+}

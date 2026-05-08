@@ -1,0 +1,58 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Invoice Log - Interface View'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_I_InvoiceLog
+  as select from zfinn_inv_log
+  // Association commented out - activate Z_I_InvoiceHeader first, then uncomment
+   association to Z_I_InvoiceHeader as _Header on $projection.HeaderUuid = _Header.HeaderUuid
+{
+  key log_uuid              as LogUuid,
+      header_uuid           as HeaderUuid,
+
+      // Event Information
+      timestamp             as Timestamp,
+      event_type            as EventType,
+      event_subtype         as EventSubtype,
+      processing_step       as ProcessingStep,
+      user_name             as UserName,
+      program_name          as ProgramName,
+
+      // Status Transition
+      old_status            as OldStatus,
+      new_status            as NewStatus,
+      status_reason         as StatusReason,
+
+      // Error Information
+      error_code            as ErrorCode,
+      error_message         as ErrorMessage,
+      technical_error       as TechnicalError,
+      error_severity        as ErrorSeverity,
+      retry_count           as RetryCount,
+
+      // Payloads
+      request_payload       as RequestPayload,
+      response_payload      as ResponsePayload,
+      payload_size          as PayloadSize,
+
+      // Performance Metrics
+      duration_ms           as DurationMs,
+      validation_duration_ms as ValidationDurationMs,
+      posting_duration_ms   as PostingDurationMs,
+
+      // Correlation
+      correlation_id        as CorrelationId,
+      session_id            as SessionId,
+      ip_address            as IpAddress,
+
+      // Audit Information
+      changed_fields        as ChangedFields,
+      ucomment              as Ucomment,
+      repost_reason         as RepostReason,
+
+      // Flags
+      is_retry              as IsRetry,
+      is_manual             as IsManual,
+      is_system             as IsSystem,
+      
+       _Header
+}
