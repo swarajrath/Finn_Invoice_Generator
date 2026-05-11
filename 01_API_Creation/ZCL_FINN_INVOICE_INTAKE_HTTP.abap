@@ -3,7 +3,7 @@ CLASS zcl_finn_invoice_intake_http DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
-    INTERFACES if_http_service_extension.
+    INTERFACES if_http_extension.
 
   PRIVATE SECTION.
     METHODS parse_intake_request
@@ -36,25 +36,25 @@ ENDCLASS.
 
 CLASS zcl_finn_invoice_intake_http IMPLEMENTATION.
 
-  METHOD if_http_service_extension~handle_request.
+  METHOD if_http_extension~handle_request.
 
     DATA: lv_request_body  TYPE string,
           lv_response_body TYPE string,
           lv_http_method   TYPE string.
 
     " Get HTTP method
-    lv_http_method = request->get_method( ).
+    lv_http_method = server->request->get_method( ).
 
     " Only accept POST requests
     IF lv_http_method <> 'POST'.
-      response->set_status( 405 ).  " Method Not Allowed
-      response->set_text( '{"error":"Method not allowed. Use POST."}' ).
+      server->response->set_status( code = 405 reason = 'Method Not Allowed' ).
+      server->response->set_cdata( '{"error":"Method not allowed. Use POST."}' ).
       RETURN.
     ENDIF.
 
     TRY.
         " Read request body
-        lv_request_body = request->get_text( ).
+        lv_request_body = server->request->get_cdata( ).
 
         " Parse JSON request
         DATA(ls_intake_request) = parse_intake_request( lv_request_body ).
@@ -72,22 +72,22 @@ CLASS zcl_finn_invoice_intake_http IMPLEMENTATION.
 
         " Set response
         IF ls_response-success = abap_true.
-          response->set_status( 200 ).  " OK
+          server->response->set_status( code = 200 reason = 'OK' ).
         ELSE.
-          response->set_status( 400 ).  " Bad Request
+          server->response->set_status( code = 400 reason = 'Bad Request' ).
         ENDIF.
 
-        response->set_header_field( i_name = 'Content-Type' i_value = 'application/json' ).
-        response->set_text( lv_response_body ).
+        server->response->set_header_field( name = 'Content-Type' value = 'application/json' ).
+        server->response->set_cdata( lv_response_body ).
 
       CATCH cx_root INTO DATA(lx_error).
         " Error handling
-        response->set_status( 500 ).  " Internal Server Error
+        server->response->set_status( code = 500 reason = 'Internal Server Error' ).
         lv_response_body = |{ '{"success":false,' }|
                         && |{ '"status":"ERROR",' }|
                         && |{ '"error_code":"INTERNAL_ERROR",' }|
                         && |{ '"error_message":"' }{ escape_json( lx_error->get_text( ) ) }{ '"}' }|.
-        response->set_text( lv_response_body ).
+        server->response->set_cdata( lv_response_body ).
     ENDTRY.
 
   ENDMETHOD.

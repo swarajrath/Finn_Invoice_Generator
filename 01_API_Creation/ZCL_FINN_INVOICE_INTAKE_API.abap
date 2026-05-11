@@ -65,6 +65,7 @@ CLASS zcl_finn_invoice_intake_api DEFINITION
         invoice_uuid       TYPE sysuuid_x16,
         status             TYPE string,       " ACCEPTED, VALIDATION_PENDING, ERROR
         validation_issues  TYPE string,       " JSON array of validation errors
+        validation_warnings TYPE string,      " JSON array of validation warnings
         processing_time_ms TYPE int4,
         error_code         TYPE string,
         error_message      TYPE string,
@@ -106,6 +107,7 @@ CLASS zcl_finn_invoice_intake_api DEFINITION
         is_extracted_data TYPE ty_extraction_payload
       EXPORTING
         et_errors         TYPE zcl_finn_invoice_validator=>tt_validation_errors
+        et_warnings       TYPE zcl_finn_invoice_validator=>tt_validation_errors
         ev_is_valid       TYPE abap_bool.
 
     METHODS map_to_internal_structure
@@ -129,6 +131,7 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
           lv_success       TYPE abap_bool,
           lv_error_msg     TYPE string,
           lt_val_errors    TYPE zcl_finn_invoice_validator=>tt_validation_errors,
+          lt_val_warnings  TYPE zcl_finn_invoice_validator=>tt_validation_errors,
           lv_is_valid      TYPE abap_bool.
 
     " Start timer
@@ -146,16 +149,8 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
         validate_extracted_data(
           EXPORTING is_extracted_data = is_extracted_data
           IMPORTING et_errors = lt_val_errors
+                    et_warnings = lt_val_warnings
                     ev_is_valid = lv_is_valid
-        ).
-
-        " Step 2: Create invoice record in database
-        create_invoice_record(
-          EXPORTING is_request = is_request
-                    is_extracted_data = is_extracted_data
-          IMPORTING ev_invoice_uuid = lv_invoice_uuid
-                    ev_success = lv_success
-                    ev_error_message = lv_error_msg
         ).
 
         " Calculate processing time
@@ -165,18 +160,20 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
           tstmp2 = lv_start_time
         ) * 1000.
 
-        " Build response
-        IF lv_success = abap_true.
-          rs_response-success = abap_true.
-          rs_response-invoice_uuid = lv_invoice_uuid.
-          rs_response-status = COND #(
-            WHEN lv_is_valid = abap_true THEN 'ACCEPTED'
-            ELSE 'VALIDATION_PENDING'
-          ).
+        " Check if validation failed - REJECT invoice if errors exist
+        IF lv_is_valid = abap_false.
+          " Validation failed - do NOT create invoice
+          rs_response-success = abap_false.
+          rs_response-status = 'REJECTED'.
+          rs_response-error_code = 'VALIDATION_FAILED'.
           rs_response-processing_time_ms = lv_duration.
 
-          " Convert validation errors to JSON
+          " Build error message from validation errors
           IF lt_val_errors IS NOT INITIAL.
+            DATA(lv_first_error) = lt_val_errors[ 1 ].
+            rs_response-error_message = lv_first_error-message.
+
+            " Convert all validation errors to JSON
             DATA(lv_errors_json) = '['.
             LOOP AT lt_val_errors INTO DATA(ls_error).
               IF sy-tabix > 1.
@@ -190,6 +187,61 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
             ENDLOOP.
             lv_errors_json = lv_errors_json && ']'.
             rs_response-validation_issues = lv_errors_json.
+          ELSE.
+            rs_response-error_message = 'Validation failed with unknown errors'.
+          ENDIF.
+
+          " Send error callback
+          IF is_request-callback_url IS NOT INITIAL.
+            send_status_callback(
+              iv_callback_url = is_request-callback_url
+              iv_orchestration_id = is_request-orchestration_id
+              iv_invoice_uuid = lv_invoice_uuid
+              iv_status = 'REJECTED'
+              iv_message = rs_response-error_message
+            ).
+          ENDIF.
+
+          RETURN.  " Exit - do not create invoice
+        ENDIF.
+
+        " Step 2: Validation passed - Create invoice record in database
+        create_invoice_record(
+          EXPORTING is_request = is_request
+                    is_extracted_data = is_extracted_data
+          IMPORTING ev_invoice_uuid = lv_invoice_uuid
+                    ev_success = lv_success
+                    ev_error_message = lv_error_msg
+        ).
+
+        " Build response
+        IF lv_success = abap_true.
+          " Invoice created successfully
+          rs_response-success = abap_true.
+          rs_response-invoice_uuid = lv_invoice_uuid.
+          rs_response-status = 'ACCEPTED'.
+          rs_response-processing_time_ms = lv_duration.
+
+          " Convert warnings to JSON (if any exist)
+          IF lt_val_warnings IS NOT INITIAL.
+            DATA: lv_warnings_json TYPE string VALUE '[',
+                  ls_warning TYPE zcl_finn_invoice_validator=>ty_validation_error.
+
+            LOOP AT lt_val_warnings INTO ls_warning.
+              IF sy-tabix > 1.
+                CONCATENATE lv_warnings_json ',' INTO lv_warnings_json.
+              ENDIF.
+
+              CONCATENATE lv_warnings_json
+                          '{"field":"' ls_warning-field '",'
+                          '"code":"' ls_warning-code '",'
+                          '"message":"' ls_warning-message '",'
+                          '"severity":"' ls_warning-severity '"}'
+                          INTO lv_warnings_json.
+            ENDLOOP.
+
+            CONCATENATE lv_warnings_json ']' INTO lv_warnings_json.
+            rs_response-validation_warnings = lv_warnings_json.
           ENDIF.
 
           " Send success callback
@@ -198,7 +250,7 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
               iv_callback_url = is_request-callback_url
               iv_orchestration_id = is_request-orchestration_id
               iv_invoice_uuid = lv_invoice_uuid
-              iv_status = rs_response-status
+              iv_status = 'ACCEPTED'
               iv_message = 'Invoice successfully received and validated'
             ).
           ENDIF.
@@ -367,13 +419,18 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
 
     " Map to validator structure
     ls_header_val = CORRESPONDING #( is_extracted_data-header ).
+
+    " Manually map confidence_score to extraction_confidence (field name mismatch)
+    ls_header_val-extraction_confidence = is_extracted_data-header-confidence_score.
+
     lt_items_val = CORRESPONDING #( is_extracted_data-items ).
 
-    " Validate
+    " Validate - capture both errors and warnings
     ev_is_valid = mo_validator->validate_invoice(
       EXPORTING is_header = ls_header_val
                 it_items = lt_items_val
       IMPORTING et_errors = et_errors
+                et_warnings = et_warnings
     ).
 
   ENDMETHOD.
@@ -412,44 +469,149 @@ CLASS zcl_finn_invoice_intake_api IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD send_status_callback.
-    " Build JSON payload
-    DATA(lv_payload) = |\{|
+    " Build JSON payload with timestamp
+    DATA: lv_timestamp TYPE string,
+          lv_payload TYPE string.
+
+    GET TIME STAMP FIELD DATA(lv_ts).
+    lv_timestamp = |{ lv_ts TIMESTAMP = ISO }|.
+
+    lv_payload = |\{|
   & |"orchestration_id": "{ iv_orchestration_id }", |
   & |"invoice_uuid": "{ iv_invoice_uuid }", |
   & |"status": "{ iv_status }", |
   & |"message": "{ iv_message }", |
-  & |"timestamp": "{ cl_abap_tstmp=>GET_SYSTEM_TIMEZONE( ) }"|
+  & |"timestamp": "{ lv_timestamp }"|
   & |\}|.
 
     " Send HTTP POST to callback URL
     DATA: lo_http_client TYPE REF TO if_http_client,
-          lv_status_code TYPE i.
+          lv_status_code TYPE i,
+          lv_status_text TYPE string,
+          lv_response_body TYPE string,
+          lv_log_message TYPE string.
 
     TRY.
+        " Create HTTP client
         cl_http_client=>create_by_url(
-          EXPORTING url = iv_callback_url
-          IMPORTING client = lo_http_client
+          EXPORTING
+            url                = iv_callback_url
+          IMPORTING
+            client             = lo_http_client
+          EXCEPTIONS
+            argument_not_found = 1
+            plugin_not_active  = 2
+            internal_error     = 3
+            OTHERS             = 4
         ).
 
+        IF sy-subrc <> 0.
+          " Could not create HTTP client - exit
+          RETURN.
+        ENDIF.
+
+        " Set request properties
         lo_http_client->request->set_method( 'POST' ).
         lo_http_client->request->set_content_type( 'application/json' ).
         lo_http_client->request->set_cdata( lv_payload ).
 
-        lo_http_client->send( ).
-        lo_http_client->receive( ).
-
-        lo_http_client->response->get_status(
-          IMPORTING code = lv_status_code
+        " Send request with timeout handling
+        lo_http_client->send(
+          EXCEPTIONS
+            http_communication_failure = 1
+            http_invalid_state         = 2
+            http_processing_failed     = 3
+            OTHERS                     = 4
         ).
 
+        IF sy-subrc <> 0.
+          " Send failed - log will happen in CATCH block
+          lv_log_message = |Webhook send failed: HTTP send error (sy-subrc={ sy-subrc })|.
+          mo_logger->log_event(
+            iv_header_uuid = iv_invoice_uuid
+            iv_event_type = 'CALLBACK_FAILED'
+            iv_event_subtype = 'SEND_ERROR'
+            iv_error_message = lv_log_message
+          ).
+          lo_http_client->close( ).
+          RETURN.
+        ENDIF.
+
+        " Receive response
+        lo_http_client->receive(
+          EXCEPTIONS
+            http_communication_failure = 1
+            http_invalid_state         = 2
+            http_processing_failed     = 3
+            OTHERS                     = 4
+        ).
+
+        IF sy-subrc <> 0.
+          " Receive failed
+          lv_log_message = |Webhook receive failed: HTTP receive error (sy-subrc={ sy-subrc })|.
+          mo_logger->log_event(
+            iv_header_uuid = iv_invoice_uuid
+            iv_event_type = 'CALLBACK_FAILED'
+            iv_event_subtype = 'RECEIVE_ERROR'
+            iv_error_message = lv_log_message
+          ).
+          lo_http_client->close( ).
+          RETURN.
+        ENDIF.
+
+        " Get response status
+        lo_http_client->response->get_status(
+          IMPORTING
+            code = lv_status_code
+            reason = lv_status_text
+        ).
+
+        " Get response body
+        lv_response_body = lo_http_client->response->get_cdata( ).
+
+        " Close connection
         lo_http_client->close( ).
 
+        " Log success or failure based on HTTP status
+        IF lv_status_code >= 200 AND lv_status_code < 300.
+          " Success (2xx status codes)
+          lv_log_message = |Webhook sent successfully to { iv_callback_url }. | &&
+                          |HTTP { lv_status_code } { lv_status_text }. | &&
+                          |Status: { iv_status }. | &&
+                          |Response: { lv_response_body }|.
+
+          mo_logger->log_event(
+            iv_header_uuid = iv_invoice_uuid
+            iv_event_type = 'CALLBACK_SUCCESS'
+            iv_event_subtype = iv_status
+            iv_comment = lv_log_message
+          ).
+
+        ELSE.
+          " Non-success status codes (4xx, 5xx)
+          lv_log_message = |Webhook failed with HTTP { lv_status_code } { lv_status_text }. | &&
+                          |URL: { iv_callback_url }. | &&
+                          |Response: { lv_response_body }|.
+
+          mo_logger->log_event(
+            iv_header_uuid = iv_invoice_uuid
+            iv_event_type = 'CALLBACK_FAILED'
+            iv_event_subtype = 'HTTP_ERROR'
+            iv_error_message = lv_log_message
+          ).
+        ENDIF.
+
       CATCH cx_root INTO DATA(lx_error).
-        " Log callback failure but don't fail main process
+        " Exception during webhook call
+        lv_log_message = |Webhook exception: { lx_error->get_text( ) }. | &&
+                        |URL: { iv_callback_url }. | &&
+                        |Status attempted: { iv_status }|.
+
         mo_logger->log_event(
           iv_header_uuid = iv_invoice_uuid
           iv_event_type = 'CALLBACK_FAILED'
-          iv_error_message = lx_error->get_text( )
+          iv_event_subtype = 'EXCEPTION'
+          iv_error_message = lv_log_message
         ).
     ENDTRY.
 

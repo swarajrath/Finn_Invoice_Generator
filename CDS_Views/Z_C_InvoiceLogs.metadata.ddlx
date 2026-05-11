@@ -1,0 +1,130 @@
+@Metadata.layer: #CORE
+annotate view Z_C_InvoiceLogs with
+{
+  // Timestamp
+  @UI.lineItem: [{ position: 10, importance: #HIGH, label: 'Time Stamp' }]
+  @UI.identification: [{ position: 10, label: 'Time Stamp' }]
+  Timestamp;
+
+  // Event Type
+  @UI.lineItem: [{ position: 20, importance: #HIGH, label: 'Event Type' }]
+  @UI.identification: [{ position: 20, label: 'Event Type' }]
+  EventTypeText;
+
+  // Processing Step
+  @UI.lineItem: [{ position: 30, importance: #MEDIUM, label: 'Processing Step' }]
+  @UI.identification: [{ position: 30, label: 'Processing Step' }]
+  ProcessingStep;
+
+  // Status Reason
+  @UI.lineItem: [{ position: 40, importance: #MEDIUM, label: 'Status Reason' }]
+  @UI.identification: [{ position: 40, label: 'Status Reason' }]
+  StatusReason;
+
+  // Error Severity
+  @UI.lineItem: [{ position: 50, importance: #HIGH, criticality: 'ErrorCriticality', label: 'Severity' }]
+  @UI.identification: [{ position: 50, label: 'Severity' }]
+  ErrorSeverityText;
+
+  // Error Message
+  @UI.lineItem: [{ position: 60, importance: #HIGH, label: 'Error Message' }]
+  @UI.identification: [{ position: 60, label: 'Error Message' }]
+  ErrorMessage;
+
+  // Duration
+  @UI.lineItem: [{ position: 70, importance: #MEDIUM, label: 'Duration (ms)' }]
+  @UI.identification: [{ position: 70, label: 'Duration (ms)' }]
+  DurationMs;
+
+  // User Name
+  @UI.lineItem: [{ position: 80, importance: #LOW, label: 'User Name' }]
+  @UI.identification: [{ position: 80, label: 'User Name' }]
+  UserName;
+
+  // Event Subtype
+  @UI.identification: [{ position: 90, label: 'Event Subtype' }]
+  EventSubtype;
+
+  // Old Status
+  @UI.identification: [{ position: 100, label: 'Old Status' }]
+  OldStatus;
+
+  // New Status
+  @UI.identification: [{ position: 110, label: 'New Status' }]
+  NewStatus;
+
+  // Error Code
+  @UI.identification: [{ position: 120, label: 'Error Code' }]
+  ErrorCode;
+
+  // Technical Error
+  @UI.identification: [{ position: 130, label: 'Technical Error' }]
+  TechnicalError;
+
+  // Retry Count
+  @UI.identification: [{ position: 140, label: 'Retry Count' }]
+  RetryCount;
+
+  // Validation Duration
+  @UI.identification: [{ position: 150, label: 'Validation Duration (ms)' }]
+  ValidationDurationMs;
+
+  // Posting Duration
+  @UI.identification: [{ position: 160, label: 'Posting Duration (ms)' }]
+  PostingDurationMs;
+
+  // Correlation ID
+  @UI.identification: [{ position: 170, label: 'Correlation ID' }]
+  CorrelationId;
+
+  // Session ID
+  @UI.identification: [{ position: 180, label: 'Session ID' }]
+  SessionId;
+
+  // Program Name
+  @UI.identification: [{ position: 190, label: 'Program Name' }]
+  ProgramName;
+
+  // Changed Fields
+  @UI.identification: [{ position: 200, label: 'Changed Fields' }]
+  ChangedFields;
+
+  // Comment
+  @UI.identification: [{ position: 210, label: 'Comment' }]
+  Ucomment;
+
+  // Repost Reason
+  @UI.identification: [{ position: 220, label: 'Repost Reason' }]
+  RepostReason;
+
+  // Hidden fields
+  @UI.hidden: true
+  LogUuid;
+
+  @UI.hidden: true
+  HeaderUuid;
+
+  @UI.hidden: true
+  EventType;
+
+  @UI.hidden: true
+  ErrorSeverity;
+
+  @UI.hidden: true
+  ErrorCriticality;
+
+  @UI.hidden: true
+  PayloadSize;
+
+  @UI.hidden: true
+  IpAddress;
+
+  @UI.hidden: true
+  IsRetry;
+
+  @UI.hidden: true
+  IsManual;
+
+  @UI.hidden: true
+  IsSystem;
+}

@@ -1,0 +1,92 @@
+@Metadata.layer: #CORE
+annotate view Z_C_InvoiceItems with
+{
+  // Item Number
+  @UI.lineItem: [{ position: 10, importance: #HIGH }]
+  @UI.identification: [{ position: 10 }]
+  ItemNumber;
+
+  // G/L Account
+  @UI.lineItem: [{ position: 20, importance: #HIGH }]
+  @UI.identification: [{ position: 20 }]
+  GlAccount;
+
+  // Cost Center
+  @UI.lineItem: [{ position: 30, importance: #MEDIUM }]
+  @UI.identification: [{ position: 30 }]
+  CostCenter;
+
+  // Amount
+  @UI.lineItem: [{ position: 40, importance: #HIGH }]
+  @UI.identification: [{ position: 40 }]
+  Amount;
+
+  // Tax Code
+  @UI.lineItem: [{ position: 50, importance: #MEDIUM }]
+  @UI.identification: [{ position: 50 }]
+  TaxCode;
+
+  // Tax Amount
+  @UI.lineItem: [{ position: 60, importance: #MEDIUM }]
+  @UI.identification: [{ position: 60 }]
+  TaxAmount;
+
+  // Item Text
+  @UI.lineItem: [{ position: 70, importance: #MEDIUM }]
+  @UI.identification: [{ position: 70 }]
+  ItemText;
+
+  // Validation Status
+  @UI.lineItem: [{ position: 80, importance: #HIGH, criticality: 'ValidationCriticality' }]
+  @UI.identification: [{ position: 80 }]
+  ValidationStatusText;
+
+  // Error Message
+  @UI.lineItem: [{ position: 90, importance: #MEDIUM }]
+  @UI.identification: [{ position: 90 }]
+  error_message;
+
+  // PO Number
+  @UI.identification: [{ position: 100 }]
+  PoNumber;
+
+  // PO Item
+  @UI.identification: [{ position: 110 }]
+  PoItem;
+
+  // Profit Center
+  @UI.identification: [{ position: 120 }]
+  ProfitCenter;
+
+  // Internal Order
+  @UI.identification: [{ position: 130 }]
+  InternalOrder;
+
+  // WBS Element
+  @UI.identification: [{ position: 140 }]
+  WbsElement;
+
+  // Quantity
+  @UI.identification: [{ position: 150 }]
+  Quantity;
+
+  // Unit
+  @UI.identification: [{ position: 160 }]
+  Unit;
+
+  // Hidden fields
+  @UI.hidden: true
+  HeaderUuid;
+
+  @UI.hidden: true
+  ItemUuid;
+
+  @UI.hidden: true
+  ValidationStatus;
+
+  @UI.hidden: true
+  ValidationCriticality;
+
+  @UI.hidden: true
+  Currency;
+}

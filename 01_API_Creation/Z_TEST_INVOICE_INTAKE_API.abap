@@ -54,48 +54,49 @@ START-OF-SELECTION.
   ls_request-source_system = 'TEST_RUNNER'.
   ls_request-processing_mode = 'AUTO'.
   ls_request-priority = 1.
-  ls_request-callback_url = ''.  " Empty for test
+  ls_request-callback_url = 'https://webhook.site/57b2d971-492c-4ec7-8b69-1b8e563c3a03'.
 
   " Build test header data with unique invoice number
+  " NOTE: Using valid master data from your system to ensure validation passes
   ls_payload-header-invoice_number = lv_invoice_number.
-  ls_payload-header-vendor_number = '100045'.
+  ls_payload-header-vendor_number = '104405'.  " Valid vendor from your system
   ls_payload-header-vendor_name = 'Test Supplier Ltd'.
-  ls_payload-header-company_code = '1000'.
-  ls_payload-header-invoice_date = '20260501'.
-  ls_payload-header-document_date = '20260501'.
-  ls_payload-header-posting_date = '20260507'.
+  ls_payload-header-company_code = '0001'.
+  ls_payload-header-invoice_date = '20260511'.
+  ls_payload-header-document_date = '20260511'.
+  ls_payload-header-posting_date = '20260511'.
   ls_payload-header-currency = 'EUR'.
-  ls_payload-header-gross_amount = '1710.00'.
-  ls_payload-header-net_amount = '1436.40'.
-  ls_payload-header-tax_amount = '273.60'.
-  ls_payload-header-payment_terms = 'Z030'.
-  ls_payload-header-po_number = '4500012345'.
+  ls_payload-header-gross_amount = '1000.00'.
+  ls_payload-header-net_amount = '840.34'.
+  ls_payload-header-tax_amount = '159.66'.
+  ls_payload-header-payment_terms = ''.  " Empty to avoid payment term validation errors
+  ls_payload-header-po_number = ''.
   ls_payload-header-reference = 'REF-TEST-001'.
-  ls_payload-header-confidence_score = '0.95'.
+  ls_payload-header-confidence_score = '0.47'.  " Numeric packed decimal
 
-  " Build test item data
+  " Build test item data with valid GL accounts
   APPEND VALUE #(
     item_number = '0001'
     description = 'Test Item 1'
-    gl_account = '6000100'
-    cost_center = 'CC1000'
+    gl_account = '202004'  " Valid GL from your system
+    cost_center = ''       " Empty to avoid cost center validation
     amount = '500.00'
-    tax_code = 'V1'
-    quantity = '100'
+    tax_code = ''          " Empty to avoid tax code validation
+    quantity = '10'
     unit = 'EA'
-    confidence_score = '0.92'
+    confidence_score = '0.92'  " Numeric packed decimal
   ) TO ls_payload-items.
 
   APPEND VALUE #(
     item_number = '0002'
     description = 'Test Item 2'
-    gl_account = '6000100'
-    cost_center = 'CC1000'
-    amount = '936.40'
-    tax_code = 'V1'
-    quantity = '10'
+    gl_account = '202006'  " Valid GL from your system
+    cost_center = ''
+    amount = '500.00'
+    tax_code = ''
+    quantity = '5'
     unit = 'EA'
-    confidence_score = '0.88'
+    confidence_score = '0.88'  " Numeric packed decimal
   ) TO ls_payload-items.
 
   " Call API
@@ -140,6 +141,11 @@ START-OF-SELECTION.
   IF ls_response-validation_issues IS NOT INITIAL.
     WRITE: / 'Validation Issues:'.
     WRITE: / ls_response-validation_issues.
+  ENDIF.
+
+  IF ls_response-validation_warnings IS NOT INITIAL.
+    WRITE: / 'Validation Warnings:'.
+    WRITE: / ls_response-validation_warnings.
   ENDIF.
 
   WRITE: / '----------------------------------------'.

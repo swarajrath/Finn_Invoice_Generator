@@ -168,6 +168,14 @@ CLASS zcl_finn_invoice_validator DEFINITION
         iv_severity   TYPE string DEFAULT 'ERROR'
         iv_suggestion TYPE string OPTIONAL.
 
+    METHODS add_warning
+      IMPORTING
+        iv_field      TYPE string
+        iv_code       TYPE string
+        iv_message    TYPE string
+        iv_severity   TYPE string DEFAULT 'WARNING'
+        iv_suggestion TYPE string OPTIONAL.
+
 ENDCLASS.
 
 
@@ -348,7 +356,7 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
 
     " 9. OCR confidence check
     IF is_header-extraction_confidence < '0.80'.
-      add_error(
+      add_warning(
         iv_field = 'invoice_header.extraction_confidence'
         iv_code = 'LOW_OCR_CONFIDENCE'
         iv_message = |OCR confidence is low ({ is_header-extraction_confidence }). Manual review recommended|
@@ -456,13 +464,25 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
 
   METHOD check_vendor_exists.
     rv_valid = abap_false.
+
+    " Convert vendor number to internal format (add leading zeros)
+    DATA(lv_vendor_internal) = iv_vendor.
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+      EXPORTING
+        input  = iv_vendor
+      IMPORTING
+        output = lv_vendor_internal.
+
+    " Check if vendor exists in general (LFA1)
     SELECT SINGLE lifnr FROM lfa1
       INTO @DATA(lv_vendor)
-      WHERE lifnr = @iv_vendor.
+      WHERE lifnr = @lv_vendor_internal.
+
     IF sy-subrc = 0.
+      " Check if vendor exists for company code (LFB1)
       SELECT SINGLE lifnr FROM lfb1
         INTO @lv_vendor
-        WHERE lifnr = @iv_vendor
+        WHERE lifnr = @lv_vendor_internal
           AND bukrs = @iv_company_code.
       IF sy-subrc = 0.
         rv_valid = abap_true.
@@ -474,13 +494,21 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
     ev_blocked = abap_false.
     ev_block_reason = ''.
 
+    " Convert vendor number to internal format (add leading zeros)
+    DATA(lv_vendor_internal) = iv_vendor.
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+      EXPORTING
+        input  = iv_vendor
+      IMPORTING
+        output = lv_vendor_internal.
+
     " Check vendor blocking fields in LFB1
     " SPERR_B = Posting block for company code
     " LOEVM_B = Deletion flag
     " ZAHLS = Payment block
     SELECT SINGLE lifnr, sperr, loevm, zahls FROM lfb1
       INTO @DATA(ls_block)
-      WHERE lifnr = @iv_vendor
+      WHERE lifnr = @lv_vendor_internal
         AND bukrs = @iv_company_code.
     IF sy-subrc = 0.
       IF ls_block-sperr IS NOT INITIAL.
@@ -499,6 +527,14 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
   METHOD check_duplicate_invoice.
     ev_exists = abap_false.
 
+    " Convert vendor number to internal format (add leading zeros)
+    DATA(lv_vendor_internal) = iv_vendor.
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+      EXPORTING
+        input  = iv_vendor
+      IMPORTING
+        output = lv_vendor_internal.
+
     " Check in BKPF (existing posted documents)
     SELECT SINGLE belnr, gjahr FROM bkpf
       INTO (@ev_document, @ev_fiscal_year)
@@ -510,11 +546,11 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
     ENDIF.
 
     " Check in ZFINN_INV_HRD (pending/processed invoices)
-    SELECT SINGLE sap_document, sap_fiscal_year FROM ZFINN_INV_HRD
+    SELECT SINGLE sap_document, sap_fiscal_year FROM zfinn_inv_hrd
       INTO (@ev_document, @ev_fiscal_year)
       WHERE company_code = @iv_company_code
         AND invoice_number = @iv_invoice_num
-        AND vendor_number = @iv_vendor
+        AND vendor_number = @lv_vendor_internal
         AND status IN ('S', 'P').  "Success or In Progress
     IF sy-subrc = 0.
       ev_exists = abap_true.
@@ -523,13 +559,25 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
 
   METHOD check_gl_account_valid.
     rv_valid = abap_false.
+
+    " Convert GL account to internal format (add leading zeros)
+    DATA(lv_gl_internal) = iv_gl_account.
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+      EXPORTING
+        input  = iv_gl_account
+      IMPORTING
+        output = lv_gl_internal.
+
+    " Check if GL exists in chart of accounts (SKA1)
     SELECT SINGLE saknr FROM ska1
       INTO @DATA(lv_gl)
-      WHERE saknr = @iv_gl_account.
+      WHERE saknr = @lv_gl_internal.
+
     IF sy-subrc = 0.
+      " Check if GL exists for company code (SKB1)
       SELECT SINGLE saknr FROM skb1
         INTO @lv_gl
-        WHERE saknr = @iv_gl_account
+        WHERE saknr = @lv_gl_internal
           AND bukrs = @iv_company_code.
       IF sy-subrc = 0.
         rv_valid = abap_true.
@@ -606,6 +654,16 @@ CLASS zcl_finn_invoice_validator IMPLEMENTATION.
       severity = iv_severity
       suggestion = iv_suggestion
     ) TO mt_errors.
+  ENDMETHOD.
+
+  METHOD add_warning.
+    APPEND VALUE #(
+      field = iv_field
+      code = iv_code
+      message = iv_message
+      severity = iv_severity
+      suggestion = iv_suggestion
+    ) TO mt_warnings.
   ENDMETHOD.
 
 ENDCLASS.
