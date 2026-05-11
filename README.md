@@ -16,11 +16,15 @@ FINN Invoice Tracking is an end-to-end invoice processing solution built on SAP 
 - ✅ Draft table architecture for OData V4
 - ✅ Backend validations (vendor checks, duplicate detection, GL account validation)
 - ✅ Status tracking with color-coded indicators
+- ✅ **PDF upload and extraction** with file browser UI (currently in demo mode with hardcoded values)
+- ✅ **"Create from PDF" button** on List Report for creating invoices from PDF files
+- ✅ **Automatic navigation** to Object Page after PDF upload
+- ✅ **Auto-population of invoice fields** with extracted data (simulated)
+- ✅ **Automatic line items creation** from extracted data
 
 **In Progress:**
-- 🚧 Edit functionality (implementing draft-enabled behavior)
-- 🚧 Document processing system for PDF invoice scanning and data extraction
-- 🚧 OCR integration for automated invoice field recognition
+- 🚧 Real OCR integration (AWS Textract / Azure Form Recognizer / SAP Document Information Extraction)
+- 🚧 PDF storage implementation (DMS / Archive / Custom table)
 
 **Planned:**
 - 📅 Repost, Correct, and Cancel actions
@@ -62,6 +66,44 @@ Detailed view of individual invoice with all associated information.
 Extended table view showing additional invoice fields.
 
 ![Additional Columns](images/Additional%20columns.png)
+
+### PDF Upload - Create from PDF
+Users can create new invoices by uploading PDF files directly from the List Report.
+
+![Create from PDF](images/Create%20from%20pdf.png)
+
+**Features:**
+- File browser dialog for selecting PDF invoices from local system
+- Upload button with "Create & Extract" action
+- Automatic navigation to Object Page after upload
+- Seamless user experience
+
+### PDF Upload - Object Page After Extraction
+After uploading a PDF, the invoice is automatically created and populated with extracted data.
+
+![Object Page After PDF Upload](images/Object%20page%20edit%20after%20pdf%20upload.png)
+
+**Features:**
+- **Automatic field population** with extracted invoice data
+- **Invoice Header**: Invoice Number, Vendor, Company Code, Dates, Amounts (currently hardcoded for demo)
+- **Line Items**: Two line items automatically created with GL accounts, cost centers, and amounts
+- **Status**: Set to "In Progress" (P) automatically
+- **OCR Confidence**: Displayed in header (0.95 in demo mode)
+- **Edit Mode**: User can review and modify extracted data before saving
+- **Validation**: All master data validations run on save (vendor, GL account, etc.)
+
+> **Note:** Current implementation uses **simulated extraction with hardcoded values** for demonstration purposes. The architecture is designed to easily integrate with real OCR services (AWS Textract, Azure Form Recognizer, or SAP Document Information Extraction). See `SAP_DI_INTEGRATION_GUIDE.md` for production OCR integration details.
+
+**Hardcoded Demo Values:**
+- Invoice Number: `INV` + 6-digit timestamp
+- Vendor Number: `0000104405` (valid test vendor)
+- Company Code: `0001`
+- Currency: `USD`
+- Gross Amount: `1190.00`
+- Net Amount: `1000.00`
+- Tax Amount: `190.00`
+- Line Item 1: GL `0000400000`, Cost Center `1000`, Amount `500.00`
+- Line Item 2: GL `0000476000`, Cost Center `2000`, Amount `500.00`
 
 ---
 

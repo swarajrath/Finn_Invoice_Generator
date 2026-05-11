@@ -6,7 +6,7 @@ define behavior for Z_C_InvoiceTracking alias InvoiceHeader
 persistent table zfinn_inv_hrd
 draft table zfinn_inv_hrd_d
 lock master total etag ChangedAt
-authorization master ( instance )
+authorization master ( global )
 etag master ChangedAt
 {
   // Standard operations
@@ -37,9 +37,9 @@ etag master ChangedAt
   }
 
   // Actions
-  action ( features : instance ) repost result [1] $self;
-  action ( features : instance ) correct result [1] $self;
-  action ( features : instance ) cancel result [1] $self;
+  action repost result [1] $self;
+  action correct result [1] $self;
+  action cancel result [1] $self;
 
   // Validations
   validation validateHeader on save { field VendorNumber, CompanyCode, InvoiceNumber, PostingDate; create; }

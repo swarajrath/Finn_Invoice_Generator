@@ -5,52 +5,52 @@
 @AbapCatalog.dataMaintenance : #RESTRICTED
 define table zfinn_inv_hrd_d {
 
-  key mandt             : mandt not null;
-  key header_uuid       : sysuuid_x16 not null;
-  invoice_number        : abap.char(16);
-  vendor_number         : abap.char(10);
-  company_code          : abap.char(4);
-  invoice_date          : abap.dats;
-  document_date         : abap.dats;
-  posting_date          : abap.dats;
-  fiscal_year           : abap.numc(4);
-  currency              : abap.cuky;
+  key mandt                : mandt not null;
+  key headeruuid           : sysuuid_x16 not null;
+  invoicenumber            : abap.char(16);
+  vendornumber             : abap.char(10);
+  companycode              : abap.char(4);
+  invoicedate              : abap.dats;
+  documentdate             : abap.dats;
+  postingdate              : abap.dats;
+  fiscalyear               : abap.numc(4);
+  currency                 : abap.cuky;
   @Semantics.amount.currencyCode : 'zfinn_inv_hrd_d.currency'
-  gross_amount          : abap.curr(15,2);
+  grossamount              : abap.curr(15,2);
   @Semantics.amount.currencyCode : 'zfinn_inv_hrd_d.currency'
-  net_amount            : abap.curr(15,2);
+  netamount                : abap.curr(15,2);
   @Semantics.amount.currencyCode : 'zfinn_inv_hrd_d.currency'
-  tax_amount            : abap.curr(15,2);
-  payment_terms         : abap.char(4);
-  baseline_date         : abap.dats;
-  payment_method        : abap.char(1);
-  payment_block         : abap.char(1);
-  document_type         : abap.char(2);
-  header_text           : abap.char(25);
-  reference             : abap.char(16);
-  po_number             : abap.char(10);
-  status                : abap.char(1);
-  processing_type       : abap.char(1);
-  sap_document          : abap.char(10);
-  sap_fiscal_year       : abap.numc(4);
-  error_code            : abap.char(10);
-  error_message         : abap.char(220);
-  error_field           : abap.char(30);
-  retry_count           : abap.int4;
-  retry_allowed         : abap.char(1);
-  external_doc_id       : abap.char(50);
-  extraction_confidence : abap.dec(3,2);
-  pdf_url               : abap.char(255);
-  created_by            : abap.char(12);
-  created_at            : timestampl;
-  changed_by            : abap.char(12);
-  changed_at            : timestampl;
-  posted_at             : timestampl;
-  corrected_by          : abap.char(12);
-  corrected_at          : timestampl;
-  processing_time_ms    : abap.int4;
-  business_area         : abap.char(4);
-  item_count            : abap.int4;
-  "%admin"              : include sych_bdl_draft_admin_inc;
+  taxamount                : abap.curr(15,2);
+  paymentterms             : abap.char(4);
+  baselinedate             : abap.dats;
+  paymentmethod            : abap.char(1);
+  paymentblock             : abap.char(1);
+  documenttype             : abap.char(2);
+  headertext               : abap.char(25);
+  reference                : abap.char(16);
+  ponumber                 : abap.char(10);
+  status                   : abap.char(1);
+  processingtype           : abap.char(1);
+  sapdocument              : abap.char(10);
+  sapfiscalyear            : abap.numc(4);
+  errorcode                : abap.char(10);
+  errormessage             : abap.char(220);
+  errorfield               : abap.char(30);
+  retrycount               : abap.int4;
+  retryallowed             : abap.char(1);
+  externaldocid            : abap.char(50);
+  extractionconfidence     : abap.dec(3,2);
+  pdfurl                   : abap.char(255);
+  createdby                : abap.char(12);
+  createdat                : timestampl;
+  changedby                : abap.char(12);
+  changedat                : timestampl;
+  postedat                 : timestampl;
+  correctedby              : abap.char(12);
+  correctedat              : timestampl;
+  processingtimems         : abap.int4;
+  businessarea             : abap.char(4);
+  itemcount                : abap.int4;
+  "%admin"                 : include sych_bdl_draft_admin_inc;
 
 }

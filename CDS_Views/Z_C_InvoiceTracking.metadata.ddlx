@@ -14,10 +14,13 @@
 }
 annotate view Z_C_InvoiceTracking with
 {
-  // Status
+  @UI.lineItem: [
+    { position: 10, importance: #HIGH, criticality: 'StatusCriticality' }
+  ]
   @UI.selectionField: [{ position: 10 }]
-  @UI.lineItem: [{ position: 10, importance: #HIGH, criticality: 'StatusCriticality' }]
-  @UI.identification: [{ position: 10 }]
+  @UI.identification: [
+    { position: 10 }
+  ]
   Status;
 
   // VendorNumber
@@ -118,13 +121,14 @@ annotate view Z_C_InvoiceTracking with
       targetQualifier: 'GrossAmount',
       position: 20
     },
-    {
-      id: 'ProcessingTime',
-      purpose: #HEADER,
-      type: #DATAPOINT_REFERENCE,
-      targetQualifier: 'ProcessingTime',
-      position: 30
-    },
+    // Commented out temporarily - ProcessingTime may be null for new invoices
+    // {
+    //   id: 'ProcessingTime',
+    //   purpose: #HEADER,
+    //   type: #DATAPOINT_REFERENCE,
+    //   targetQualifier: 'ProcessingTime',
+    //   position: 30
+    // },
     {
       id: 'Confidence',
       purpose: #HEADER,
@@ -213,9 +217,9 @@ annotate view Z_C_InvoiceTracking with
 
   @UI.dataPoint: {
     qualifier: 'ProcessingTime',
-    title: 'Processing Time (sec)'
+    title: 'Processing Time (ms)'
   }
-  ProcessingTimeSec;
+  ProcessingTimeMs;
 
   @UI.dataPoint: {
     qualifier: 'Confidence',

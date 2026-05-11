@@ -140,6 +140,15 @@
                     "creationMode": {
                       "name": "NewPage"
                     }
+                  },
+                  "actions": {
+                    "ListReportExt": {
+                      "press": "finn.invoice.finninvoicetracking.ext.controller.ListReportExt.onClickUploadEdit",
+                      "visible": true,
+                      "enabled": true,
+                      "requiresSelection": false,
+                      "text": "Create from PDF"
+                    }
                   }
                 }
               }
@@ -157,10 +166,7 @@
               "enhanceI18n": "i18n/i18n.properties",
               "content": {
                 "header": {
-                  "visible": true,
-                  "facets": {
-                    "visible": true
-                  }
+                  "visible": true
                 }
               },
               "navigation": {
