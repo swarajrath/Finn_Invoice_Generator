@@ -193,42 +193,5 @@ External System → HTTP POST → ICF Service (ZFINN_INVOICE_INTAKE)
      VALIDATOR              LOGGER           (ZFINN_INV_*)
 ```
 
-**Solution 2: Auto-Posting Engine**
-```
-Batch Job / Manual Trigger
-         ↓
-ZCL_FINN_AUTO_POST_ENGINE
-         ↓
-    ┌────┴────┐
-    ↓         ↓
-FB60 BAPI  MIRO BAPI
-(non-PO)   (PO-based)
-```
 
----
-
-## 🧪 Testing
-
-### API Testing
-Use SAP Gateway Client (`/IWFND/GW_CLIENT`) to test the Invoice Intake API:
-- See `GATEWAY_CLIENT_TESTING_GUIDE.md` for detailed testing instructions
-- Test programs: `Z_TEST_INVOICE_INTAKE_API` (success), `Z_TEST_INVOICE_INTAKE_ERROR` (error scenarios)
-
-### Fiori App Testing
-1. Launch app from Fiori Launchpad or directly via service URL
-2. Test CRUD operations (Create, Read, Update, Delete)
-3. Verify validation messages and status indicators
-4. Check line items and processing timeline display
-
----
-
-## 📖 Documentation Files
-
-- **GATEWAY_CLIENT_TESTING_GUIDE.md** - Step-by-step API testing with SAP Gateway Client
-- **INTERVIEW_PREPARATION.md** - Technical deep dive, Q&A, and solution explanation
-- **BAPI_DISCOVERY_GUIDE.md** - How to discover and analyze BAPIs for integration
-- **01_API_Creation/README.md** - Invoice Intake API detailed documentation
-- **02_AUTO_POST_ENGINE/README.md** - Auto-Posting Engine detailed documentation
-
----
 
